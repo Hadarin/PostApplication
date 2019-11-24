@@ -6,4 +6,4 @@
 
 3. Stop the application and comment `spring.jpa.hibernate.ddl-auto = create` again, then fill the data using /resources/db/data.sql
 
-4. Run the application by the main method in 'PostAppApplication' class.
+4. Run the application by the main method in `PostAppApplication` class.
