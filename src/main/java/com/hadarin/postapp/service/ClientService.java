@@ -133,7 +133,7 @@ public class ClientService {
      */
     public BigDecimal debtSumm (Client client) {
         BigDecimal summ = new BigDecimal(0);
-        for (Credit credit: client.getCredits()) {
+        for (Credit credit: creditRepo.findAllByClient_IdClient(client.getIdClient())) {
             if (credit.getStateCredit().equals("O")) {
                 summ = summ.add(credit.getAmtCredit());
             }
