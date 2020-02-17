@@ -53,7 +53,7 @@ public class ClientService {
             System.out.println(logMarker + "Кредиты у клиента отсутствуют");
             debtSumm = new BigDecimal(0);
         } else {
-            debtSumm = debtSumm(client);
+            debtSumm = getDebtSumm(client);
             System.out.println(logMarker + "Сумма кредитов = " + debtSumm);
             client.setCredits(credits);
         }
@@ -131,7 +131,7 @@ public class ClientService {
      * @param client is the request body from the post request to application
      * @return summ of the all opened credits
      */
-    public BigDecimal debtSumm (Client client) {
+    public BigDecimal getDebtSumm(Client client) {
         BigDecimal summ = new BigDecimal(0);
         for (Credit credit: creditRepo.findAllByClient_IdClient(client.getIdClient())) {
             if (credit.getStateCredit().equals("O")) {

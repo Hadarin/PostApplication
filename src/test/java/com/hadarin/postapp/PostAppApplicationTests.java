@@ -37,7 +37,7 @@ public class PostAppApplicationTests {
 
 		client1.setCredits(credits);
 
-		assertEquals(new BigDecimal(5000), clientService.debtSumm(client1));
+		assertEquals(new BigDecimal(5000), clientService.getDebtSumm(client1));
 	}
 
 	/**
