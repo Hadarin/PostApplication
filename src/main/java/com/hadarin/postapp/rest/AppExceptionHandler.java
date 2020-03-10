@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpServerErrorException;
 
 /**
  *This class helps to handle and process exceptions
@@ -20,7 +21,7 @@ public class AppExceptionHandler {
     public ResponseEntity<ClientErrorResponse> handleException (Exception ex) {
         ex.printStackTrace();
         ClientErrorResponse error = new ClientErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-        "Oops. Something went wrong.", System.currentTimeMillis());
+        "Oops. Something went wrong. Probably external services are unavailable.", System.currentTimeMillis());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -37,5 +38,12 @@ public class AppExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<ClientErrorResponse> handleException (HttpServerErrorException ex) {
+        ex.printStackTrace();
+        ClientErrorResponse error =
+                new ClientErrorResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage(), System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
 
 }

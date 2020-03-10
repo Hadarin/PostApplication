@@ -9,7 +9,10 @@ import com.hadarin.postapp.repos.CreditRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,7 +47,7 @@ public class ClientService {
      * @param client is the request body from the post request to application
      */
     public void updateClientInfo(Client client) {
-        checkClient(client);
+        checkClientAndServices(client);
         String logMarker = "CLIENT ID: " + client.getIdClient() + " > ";
         BigDecimal convertedMonthSalary =  convertedMonthSalary(client, getCourses());
         List<Credit> credits = getCreditsByIdClient(client.getIdClient());
@@ -92,9 +95,16 @@ public class ClientService {
     public List<Currency> getCourses () {
         RestTemplate restTemplate = new RestTemplate();
         String uri = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-        List<Currency> currencies = restTemplate.exchange(uri, HttpMethod.GET,
-                null, new ParameterizedTypeReference<List<Currency>>(){}).getBody();
-        return currencies;
+        try {
+            List<Currency> currencies = restTemplate.exchange(uri, HttpMethod.GET,
+                    null, new ParameterizedTypeReference<List<Currency>>() {
+                    }).getBody();
+            return currencies;
+        } catch (final HttpServerErrorException e){
+            System.out.println(e.getStatusCode());
+            System.out.println(e.getResponseBodyAsString());
+            return null;
+        }
     }
 
     /**
@@ -195,13 +205,14 @@ public class ClientService {
      * Throws exceptions in case of the required fields are not fulfilled.
      * @param client is the request body from the post request to application
      */
-    private void checkClient(Client client) {
+    private void checkClientAndServices(Client client) {
         if (client == null) throw new IllegalArgumentException("client cannot be null");
         if (client.getIdClient() == null) throw new IllegalArgumentException("idClient cannot be null");
         if (client.getDateBirthday() == null) throw new IllegalArgumentException("dateBirthday cannot be null");
         if (client.getPhone() == null) throw new IllegalArgumentException("phone cannot be null");
         if (client.getMonthSalary() == null) throw new IllegalArgumentException("monthSalary cannot be null");
         if (client.getCurrSalary() == null) throw new IllegalArgumentException("currentSalary cannot be null");
+        if (getCourses() == null) throw new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }
