@@ -12,4 +12,6 @@ import org.springframework.stereotype.Repository;
 @RepositoryRestResource(path = "clients")
 public interface ClientRepo extends PagingAndSortingRepository<Client, Long> {
 
+    Client findClientByIdClient(Long idClient);
+
 }

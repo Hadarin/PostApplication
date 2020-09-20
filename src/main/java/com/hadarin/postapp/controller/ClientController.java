@@ -36,4 +36,11 @@ public class ClientController {
     public List<Client> getClients(){
         return service.getClients();
     }
+
+    @GetMapping("/get-clients/{id}")
+    public Client getClientById(@PathVariable Long id){
+        return service.getClientById(id);
+    }
 }
+
+

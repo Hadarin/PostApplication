@@ -27,19 +27,37 @@ import java.util.List;
 @Service
 public class ClientService {
 
-    @Autowired
     private ClientRepo clientRepo;
-
-    @Autowired
     private CreditRepo creditRepo;
 
-    private Gson gson = new Gson();
+
+    @Autowired
+    public  ClientService (CreditRepo creditRepo, ClientRepo clientRepo){
+        this.clientRepo = clientRepo;
+        this.creditRepo = creditRepo;
+    }
+
+    private final Gson gson = new Gson();
 
     /**
      *Service method that returns all Clients from the database
      */
     public List<Client> getClients(){
         return (List<Client>) clientRepo.findAll();
+    }
+
+    /**
+     *
+     * @param idClient
+     * @return client by idClient
+     */
+    public Client getClientById(Long idClient){
+        Client client = clientRepo.findClientByIdClient(idClient);
+        if(client != null){
+            return client;
+        } else {
+            throw new IllegalArgumentException("The client isn't found in base by id " + idClient +".");
+        }
     }
 
     /**
@@ -95,16 +113,10 @@ public class ClientService {
     public List<Currency> getCourses () {
         RestTemplate restTemplate = new RestTemplate();
         String uri = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-        try {
             List<Currency> currencies = restTemplate.exchange(uri, HttpMethod.GET,
                     null, new ParameterizedTypeReference<List<Currency>>() {
                     }).getBody();
             return currencies;
-        } catch (final HttpServerErrorException e){
-            System.out.println(e.getStatusCode());
-            System.out.println(e.getResponseBodyAsString());
-            return null;
-        }
     }
 
     /**

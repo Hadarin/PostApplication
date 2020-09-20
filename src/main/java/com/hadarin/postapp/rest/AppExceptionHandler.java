@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  *This class helps to handle and process exceptions
@@ -44,6 +45,13 @@ public class AppExceptionHandler {
         ClientErrorResponse error =
                 new ClientErrorResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage(), System.currentTimeMillis());
         return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+    @ExceptionHandler
+    public ResponseEntity<ClientErrorResponse> handleException (MethodArgumentTypeMismatchException ex) {
+        ex.printStackTrace();
+        ClientErrorResponse error =
+                new ClientErrorResponse(HttpStatus.BAD_REQUEST.value(), "Please enter a correct request", System.currentTimeMillis());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
 }

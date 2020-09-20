@@ -2,10 +2,14 @@ package com.hadarin.postapp;
 
 import com.hadarin.postapp.entity.Client;
 import com.hadarin.postapp.entity.Credit;
+import com.hadarin.postapp.repos.ClientRepo;
+import com.hadarin.postapp.repos.CreditRepo;
 import com.hadarin.postapp.service.ClientService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,6 +21,9 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class PostAppApplicationTests {
 
+	@Mock
+	private CreditRepo creditRepo;
+
 	@InjectMocks
 	private ClientService clientService;
 
@@ -26,7 +33,7 @@ public class PostAppApplicationTests {
 	@Test
 	public void debtSummTest() {
 
-		Client client1 = new Client();
+		Client client = new Client();
 
 		Credit credit1 = new Credit(new BigDecimal(1000), "C");
 		Credit credit2 = new Credit(new BigDecimal(5000), "O");
@@ -35,9 +42,11 @@ public class PostAppApplicationTests {
 		credits.add(credit1);
 		credits.add(credit2);
 
-		client1.setCredits(credits);
+		client.setCredits(credits);
 
-		assertEquals(new BigDecimal(5000), clientService.getDebtSumm(client1));
+		Mockito.when(creditRepo.findAllByClient_IdClient(client.getIdClient())).thenReturn(credits);
+
+		assertEquals(new BigDecimal(5000), clientService.getDebtSumm(client));
 	}
 
 	/**
