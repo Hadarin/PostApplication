@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -110,11 +113,11 @@ public class ClientService {
      *     #3 - BTC
      * @return list of currencies
      */
-    public List<Currency> getCourses () {
+    public ArrayList<Currency> getCourses () {
         RestTemplate restTemplate = new RestTemplate();
         String uri = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-            List<Currency> currencies = restTemplate.exchange(uri, HttpMethod.GET,
-                    null, new ParameterizedTypeReference<List<Currency>>() {
+            ArrayList<Currency> currencies = restTemplate.exchange(uri, HttpMethod.GET,
+                    null, new ParameterizedTypeReference<ArrayList<Currency>>() {
                     }).getBody();
             return currencies;
     }
@@ -126,15 +129,13 @@ public class ClientService {
      */
     public BigDecimal convertedMonthSalary(Client client, List<Currency> currencies) {
         BigDecimal converted = new BigDecimal(0);
-        if (client.getCurrSalary().equals("UAH")) return client.getMonthSalary();
-        else
-        if (client.getCurrSalary().equals("USD")) converted = (client.getMonthSalary().multiply(currencies.get(0).getSale()));
-        else
-        if (client.getCurrSalary().equals("EUR")) converted = (client.getMonthSalary().multiply(currencies.get(1).getSale()));
-        else
-        if (client.getCurrSalary().equals("RUR")) converted = (client.getMonthSalary().multiply(currencies.get(2).getSale()));
-        else
-        if (client.getCurrSalary().equals("BTC")) converted = (client.getMonthSalary().multiply(currencies.get(3).getSale()));
+        BigDecimal monthSalary = client.getMonthSalary();
+        for(Currency currency : currencies){
+            if(currency.getCcy().equals(client.getCurrSalary())){
+                converted = monthSalary.multiply(currency.getSale());
+                break;
+            }
+        }
         return converted;
     }
 

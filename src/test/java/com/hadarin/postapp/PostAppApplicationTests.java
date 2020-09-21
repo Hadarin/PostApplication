@@ -2,6 +2,7 @@ package com.hadarin.postapp;
 
 import com.hadarin.postapp.entity.Client;
 import com.hadarin.postapp.entity.Credit;
+import com.hadarin.postapp.entity.Currency;
 import com.hadarin.postapp.repos.ClientRepo;
 import com.hadarin.postapp.repos.CreditRepo;
 import com.hadarin.postapp.service.ClientService;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -68,10 +70,13 @@ public class PostAppApplicationTests {
 	 */
 	@Test
 	public void getCoursesTest() {
-		assertEquals( "USD", clientService.getCourses().get(0).getCcy());
-		assertEquals( "EUR", clientService.getCourses().get(1).getCcy());
-		assertEquals( "RUR", clientService.getCourses().get(2).getCcy());
-		assertEquals( "BTC", clientService.getCourses().get(3).getCcy());
+
+		ArrayList<Currency> currencies = clientService.getCourses();
+
+		assertEquals( "USD", currencies.get(0).getCcy());
+		assertEquals( "EUR", currencies.get(1).getCcy());
+		assertEquals( "RUR", currencies.get(2).getCcy());
+		assertEquals( "BTC", currencies.get(3).getCcy());
 	}
 
 	/**
@@ -85,5 +90,20 @@ public class PostAppApplicationTests {
 		System.out.println("BIRTHDAY IS: " + new Date(704588505812L));
 		System.out.println(clientService.isClientAdult(new Date(704588505812L)));
 	}
+
+	/*
+	@Test
+	public void ditch() {
+
+
+		Map<String, String> env = System.getenv();
+		for (Map.Entry<String, String> envName : env.entrySet()) {
+			System.out.println(envName.getKey() + "=" + envName.getValue());
+		}
+
+
+		System.out.println(System.getenv("USER"));
+	}
+	 */
 
 }
