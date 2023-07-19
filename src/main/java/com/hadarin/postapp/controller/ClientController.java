@@ -36,7 +36,7 @@ public class ClientController {
      */
     @GetMapping("/get-clients")
     public List<Client> getClients(){
-        log.info("Getting all clients...");
+        log.info("Getting all clients");
         return service.getClients();
     }
 
