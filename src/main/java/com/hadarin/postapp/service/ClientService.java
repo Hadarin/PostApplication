@@ -6,16 +6,15 @@ import com.hadarin.postapp.entity.Credit;
 import com.hadarin.postapp.entity.Currency;
 import com.hadarin.postapp.repos.ClientRepo;
 import com.hadarin.postapp.repos.CreditRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
@@ -28,10 +27,11 @@ import java.util.List;
  *The main service of the application that processing input data
  */
 @Service
+@Slf4j
 public class ClientService {
 
-    private ClientRepo clientRepo;
-    private CreditRepo creditRepo;
+    private final ClientRepo clientRepo;
+    private final CreditRepo creditRepo;
 
 
     @Autowired
@@ -72,33 +72,33 @@ public class ClientService {
         String logMarker = "CLIENT ID: " + client.getIdClient() + " > ";
         BigDecimal convertedMonthSalary =  convertedMonthSalary(client, getCourses());
         List<Credit> credits = getCreditsByIdClient(client.getIdClient());
-        BigDecimal debtSumm;
+        BigDecimal debtSum;
         if (credits == null || credits.isEmpty()) {
-            System.out.println(logMarker + "Кредиты у клиента отсутствуют");
-            debtSumm = new BigDecimal(0);
+            log.debug(logMarker + "doesn't have debts");
+            debtSum = new BigDecimal(0);
         } else {
-            debtSumm = getDebtSumm(client);
-            System.out.println(logMarker + "Сумма кредитов = " + debtSumm);
+            debtSum = getDebtSum(client);
+            log.debug(logMarker + "debt sum = " + debtSum);
             client.setCredits(credits);
         }
-        Double limitItogCoefficient = getLimitItogCoefficient(client.getPhone());
-        System.out.println(logMarker + "Коэффициент для рассчета лимита: " + limitItogCoefficient);
-        BigDecimal limitItog = getLimitItog(limitItogCoefficient,
+        Double limitCoefficient = getLimitCoefficient(client.getPhone());
+        log.debug(logMarker + "coefficient for the limit calculation: " + limitCoefficient);
+        BigDecimal limit = calculateLimit(limitCoefficient,
                                             convertedMonthSalary,
-                                            debtSumm,
+                                            debtSum,
                                             client.getRequestLimit(),
                                             client.getDateBirthday());
-        System.out.println(logMarker + "Итоговый лимит: " + limitItog);
-        if (limitItog.compareTo(BigDecimal.valueOf(0)) > 0) {
-            System.out.println(logMarker + "Запрошенный лимит принят");
+        log.debug(logMarker + "calculated limit: " + limit);
+        if (limit.compareTo(BigDecimal.valueOf(0)) > 0) {
+            log.debug(logMarker + "requested limit accepted");
             client.setDecision("accept");
         } else {
-            System.out.println(logMarker + "Запрошенный лимит отклонён");
+            System.out.println(logMarker + "requested limit declined");
             client.setDecision("decline");
         }
-        client.setLimitITog(limitItog);
+        client.setLimitITog(limit);
         client.setDateCurr(new Date());
-        System.out.println(logMarker + "Сохранение данных о клиенте в базу: " + gson.toJson(client));
+        log.debug(logMarker + "saving client data: " + gson.toJson(client));
         clientRepo.save(client);
     }
 
@@ -107,19 +107,16 @@ public class ClientService {
     /**
      * Taking from the api and mapping to Currency class list of the currencies.
      * Currencies by index:
-     *     #0 - USD
-     *     #1 - EUR
-     *     #2 - RUR
-     *     #3 - BTC
+     *     #0 - EUR
+     *     #1 - USD
      * @return list of currencies
      */
     public ArrayList<Currency> getCourses () {
         RestTemplate restTemplate = new RestTemplate();
         String uri = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-            ArrayList<Currency> currencies = restTemplate.exchange(uri, HttpMethod.GET,
+         return restTemplate.exchange(uri, HttpMethod.GET,
                     null, new ParameterizedTypeReference<ArrayList<Currency>>() {
                     }).getBody();
-            return currencies;
     }
 
     /**
@@ -154,7 +151,7 @@ public class ClientService {
      * @param client is the request body from the post request to application
      * @return summ of the all opened credits
      */
-    public BigDecimal getDebtSumm(Client client) {
+    public BigDecimal getDebtSum(Client client) {
         BigDecimal summ = new BigDecimal(0);
         for (Credit credit: creditRepo.findAllByClient_IdClient(client.getIdClient())) {
             if (credit.getStateCredit().equals("O")) {
@@ -173,45 +170,61 @@ public class ClientService {
      * @param phone - telephone number of the Client
      * @return coefficient k
      */
-    public Double getLimitItogCoefficient(String phone) {
+    public Double getLimitCoefficient(String phone) {
         double k;
         String operator = phone.substring(1, 3);
-        if (operator.equals("67") || operator.equals("96") || operator.equals("97") || operator.equals("98") ) k = 0.95;
-        else
-        if (operator.equals("50") || operator.equals("66") || operator.equals("95") || operator.equals("99") ) k = 0.94;
-        else
-        if (operator.equals("63") || operator.equals("73") || operator.equals("93")) k = 0.92;
-        else k = 0.9;
+        switch (operator) {
+            case "67":
+            case "96":
+            case "97":
+            case "98":
+                k = 0.95;
+                break;
+            case "50":
+            case "66":
+            case "95":
+            case "99":
+                k = 0.94;
+                break;
+            case "63":
+            case "73":
+            case "93":
+                k = 0.92;
+                break;
+            default:
+                k = 0.9;
+                break;
+        }
         return k;
     }
 
     /**
-     * Pprocess limitItog according to the following parameters
+     * Pprocess limit according to the following parameters
      * @param coefficient - k based on mobile operator code
      * @param convertedMonthSalary - month salary of the Client converted to UAH
      * @param debtSumm - summ of the opened Client credits
      * @param requestLimit - requested limit in UAH by Client
-     * @param clientBirthday - the birthday of the Client, if the Client isn't adult - limitItog should be nulled.
-     * @return processed limitItog
+     * @param clientBirthday - the birthday of the Client, if the Client isn't adult - limit should be null.
+     * @return processed limit
      */
-    public BigDecimal getLimitItog (Double coefficient,
-                                    BigDecimal convertedMonthSalary,
-                                    BigDecimal debtSumm,
-                                    BigDecimal requestLimit,
-                                    Date clientBirthday) {
-        BigDecimal decimalCoeff = BigDecimal.valueOf(coefficient);
-        BigDecimal limitItog = decimalCoeff.multiply(convertedMonthSalary.subtract(debtSumm));
-        if (limitItog.compareTo(requestLimit) > 0) {
-            limitItog = requestLimit;
+    public BigDecimal calculateLimit(Double coefficient,
+                                     BigDecimal convertedMonthSalary,
+                                     BigDecimal debtSumm,
+                                     BigDecimal requestLimit,
+                                     Date clientBirthday) {
+        BigDecimal decimalCoefficient = BigDecimal.valueOf(coefficient);
+        BigDecimal limit = decimalCoefficient.multiply(convertedMonthSalary.subtract(debtSumm));
+        if (limit.compareTo(requestLimit) > 0) {
+            limit = requestLimit;
         }
-        BigDecimal sixtyPercentsFromSalary = convertedMonthSalary.multiply(new BigDecimal(0.6));
+        BigDecimal sixtyPercentsFromSalary = convertedMonthSalary.multiply(new BigDecimal("0.6"));
         if (debtSumm.compareTo(sixtyPercentsFromSalary) > 0) {
-            limitItog = new BigDecimal(0);
+            limit = new BigDecimal(0);
         }
         if (!isClientAdult(clientBirthday)) {
-            limitItog = new BigDecimal(0);
+            limit = new BigDecimal(0);
         }
-        return limitItog;
+        return limit;
     }
 
     /**

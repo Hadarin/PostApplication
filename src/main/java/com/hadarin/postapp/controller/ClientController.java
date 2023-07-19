@@ -2,7 +2,8 @@ package com.hadarin.postapp.controller;
 
 import com.hadarin.postapp.entity.Client;
 import com.hadarin.postapp.service.ClientService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -12,13 +13,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
+@Slf4j
 public class ClientController {
 
-    @Autowired
     private ClientService service;
 
     /**
-     *Handle the Post request
+     *Handle the Post request++
      * @param client - the request body
      * @return {@link ResponseEntity<String>} - returns "OK" if the request completed without errors
      */
@@ -34,6 +36,7 @@ public class ClientController {
      */
     @GetMapping("/get-clients")
     public List<Client> getClients(){
+        log.info("Getting all clients...");
         return service.getClients();
     }
 

@@ -1,6 +1,9 @@
 package com.hadarin.postapp.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -12,6 +15,9 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "credit")
+@NoArgsConstructor
+@Getter
+@Setter
 public class Credit {
 
     @Id
@@ -33,60 +39,8 @@ public class Credit {
     @JoinColumn(name ="id_client", nullable = false)
     private Client client;
 
-    public Credit() {
-    }
-
     public Credit(BigDecimal amtCredit, String stateCredit) {
         this.amtCredit = amtCredit;
         this.stateCredit = stateCredit;
-    }
-
-    public Credit(String stateCredit, BigDecimal amtCredit) {
-        this.stateCredit = stateCredit;
-        this.amtCredit = amtCredit;
-    }
-
-    public Credit(BigDecimal amtCredit) {
-        this.amtCredit = amtCredit;
-    }
-
-    public BigDecimal getAmtCredit() {
-        return amtCredit;
-    }
-
-    public void setAmtCredit(BigDecimal amtCredit) {
-        this.amtCredit = amtCredit;
-    }
-
-    public Date getDateStart() {
-        return dateStart;
-    }
-
-    public void setDateStart(Date dateStart) {
-        this.dateStart = dateStart;
-    }
-
-    public String getStateCredit() {
-        return stateCredit;
-    }
-
-    public void setStateCredit(String stateCredit) {
-        this.stateCredit = stateCredit;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public Long getIdCredit() {
-        return idCredit;
-    }
-
-    public void setIdCredit(Long idCredit) {
-        this.idCredit = idCredit;
     }
 }

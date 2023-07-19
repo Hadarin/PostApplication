@@ -1,10 +1,17 @@
 package com.hadarin.postapp.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 
 /**
  * This class is necessary to the mapping of the currencies from the api
  */
+@NoArgsConstructor
+@Getter
+@Setter
 public class Currency {
 
     private String ccy;
@@ -12,40 +19,6 @@ public class Currency {
     private BigDecimal buy;
     private BigDecimal sale;
 
-    public Currency() {
-    }
-
-    public String getCcy() {
-        return ccy;
-    }
-
-    public void setCcy(String ccy) {
-        this.ccy = ccy;
-    }
-
-    public String getBase_ccy() {
-        return base_ccy;
-    }
-
-    public void setBase_ccy(String base_ccy) {
-        this.base_ccy = base_ccy;
-    }
-
-    public BigDecimal getBuy() {
-        return buy;
-    }
-
-    public void setBuy(BigDecimal buy) {
-        this.buy = buy;
-    }
-
-    public BigDecimal getSale() {
-        return sale;
-    }
-
-    public void setSale(BigDecimal sale) {
-        this.sale = sale;
-    }
 }
 
 

@@ -1,6 +1,9 @@
 package com.hadarin.postapp.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,6 +16,9 @@ import java.util.List;
  */
 @Entity
 @Table(name ="client")
+@NoArgsConstructor
+@Getter
+@Setter
 public class Client {
 
     @Id
@@ -52,110 +58,7 @@ public class Client {
     @Column(name = "limititog")
     private BigDecimal limitITog;
 
-//    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "client")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
     private List<Credit> credits;
 
-    public Client() {
-    }
-
-    public Client(Long idClient) {
-        this.idClient = idClient;
-    }
-
-    public Long getIdClient() {
-        return idClient;
-    }
-
-    public void setIdClient(Long idClient) {
-        this.idClient = idClient;
-    }
-
-    public Date getDateBirthday() {
-        return dateBirthday;
-    }
-
-    public void setDateBirthday(Date dateBirthday) {
-        this.dateBirthday = dateBirthday;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public BigDecimal getMonthSalary() {
-        return monthSalary;
-    }
-
-    public void setMonthSalary(BigDecimal monthSalary) {
-        this.monthSalary = monthSalary;
-    }
-
-    public String getCurrSalary() {
-        return currSalary;
-    }
-
-    public void setCurrSalary(String currSalary) {
-        this.currSalary = currSalary;
-    }
-
-    public BigDecimal getRequestLimit() {
-        return requestLimit;
-    }
-
-    public void setRequestLimit(BigDecimal requestLimit) {
-        this.requestLimit = requestLimit;
-    }
-
-    public Date getDateCurr() {
-        return dateCurr;
-    }
-
-    public void setDateCurr(Date dateCurr) {
-        this.dateCurr = dateCurr;
-    }
-
-    public String getDecision() {
-        return decision;
-    }
-
-    public void setDecision(String decision) {
-        this.decision = decision;
-    }
-
-    public BigDecimal getLimitITog() {
-        return limitITog;
-    }
-
-    public void setLimitITog(BigDecimal limitITog) {
-        this.limitITog = limitITog;
-    }
-
-    public List<Credit> getCredits() {
-        return credits;
-    }
-
-    public void setCredits(List<Credit> credits) {
-        this.credits = credits;
-    }
 }

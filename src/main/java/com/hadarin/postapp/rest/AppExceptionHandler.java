@@ -15,7 +15,7 @@ public class AppExceptionHandler {
 
     /**
      *
-     * @param ex exception of the concrete type (Exception)
+     * @param ex exception to the concrete type (Exception)
      * @return response body with error code and description
      */
     @ExceptionHandler
@@ -27,8 +27,8 @@ public class AppExceptionHandler {
     }
 
     /**
-     *Exception hadler that excepts incorrect data
-     * @param ex exception of the concrete type (IllegalArgumentException)
+     *Exception handler that excepts incorrect data
+     * @param ex exception to the concrete type (IllegalArgumentException)
      * @return response body with error code and description
      */
     @ExceptionHandler
