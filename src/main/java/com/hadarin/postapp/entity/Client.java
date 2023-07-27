@@ -1,15 +1,12 @@
 package com.hadarin.postapp.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
-
 
 /**
  * Domain Client class
@@ -17,6 +14,8 @@ import java.util.List;
 @Entity
 @Table(name ="client")
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Getter
 @Setter
 public class Client {
@@ -27,8 +26,7 @@ public class Client {
     private Long idClient;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Transient
-    private Date dateBirthday;
+    private LocalDateTime birthdayDate;
 
     @Column(name = "phone")
     private String phone;
@@ -43,20 +41,20 @@ public class Client {
     private BigDecimal monthSalary;
 
     @Column(name = "curr_salary")
-    private String currSalary;
+    private String salaryCurrency;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Transient
-    private BigDecimal requestLimit;
+    private BigDecimal requestedLimit;
 
     @Column(name = "date_curr")
-    private Date dateCurr;
+    private LocalDateTime dateCurr;
 
     @Column(name = "decision")
     private String decision;
 
     @Column(name = "limititog")
-    private BigDecimal limitITog;
+    private BigDecimal calculatedLimit;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "client")
     private List<Credit> credits;

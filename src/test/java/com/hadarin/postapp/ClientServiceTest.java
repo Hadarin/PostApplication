@@ -12,8 +12,8 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -84,8 +84,8 @@ public class ClientServiceTest {
 	 */
 	@Test
 	public void testIsAdult() {
-		assertFalse(clientService.isClientAdult(new Date(1504588505812L)));
-		assertTrue(clientService.isClientAdult(new Date(704588505812L)));
+		assertFalse(clientService.isClientAdult(LocalDateTime.now()));
+		assertTrue(clientService.isClientAdult(LocalDateTime.of(1994, 1, 16, 0, 0)));
 	}
 
 }

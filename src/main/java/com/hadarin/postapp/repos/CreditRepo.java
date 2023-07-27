@@ -1,6 +1,7 @@
 package com.hadarin.postapp.repos;
 
 import com.hadarin.postapp.entity.Credit;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * Repository enable access to the data in the database (Table credit),
  */
 @Repository
-public interface CreditRepo extends PagingAndSortingRepository<Credit, Long> {
+public interface CreditRepo extends CrudRepository<Credit, Long> {
 
     /**
      * Finds credits of the client by idClient

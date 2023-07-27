@@ -1,13 +1,16 @@
 package com.hadarin.postapp.service;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hadarin.postapp.entity.Client;
 import com.hadarin.postapp.entity.Credit;
 import com.hadarin.postapp.entity.Currency;
 import com.hadarin.postapp.repos.ClientRepo;
 import com.hadarin.postapp.repos.CreditRepo;
+import com.hadarin.postapp.rest.ValidatorException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -28,19 +32,13 @@ import java.util.List;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ClientService {
 
     private final ClientRepo clientRepo;
     private final CreditRepo creditRepo;
-
-
-    @Autowired
-    public  ClientService (CreditRepo creditRepo, ClientRepo clientRepo){
-        this.clientRepo = clientRepo;
-        this.creditRepo = creditRepo;
-    }
-
-    private final Gson gson = new Gson();
+    @Qualifier("customMapper")
+    private final ObjectMapper customMapper;
 
     /**
      *Service method that returns all Clients from the database
@@ -67,7 +65,7 @@ public class ClientService {
      *Final Service method to process all input data
      * @param client is the request body from the post request to application
      */
-    public void updateClientInfo(Client client) {
+    public void updateClientInfo(Client client) throws JsonProcessingException {
         checkClientAndServices(client);
         String logMarker = "CLIENT ID: " + client.getIdClient() + " > ";
         BigDecimal convertedMonthSalary =  convertedMonthSalary(client, getCourses());
@@ -86,8 +84,8 @@ public class ClientService {
         BigDecimal limit = calculateLimit(limitCoefficient,
                                             convertedMonthSalary,
                                             debtSum,
-                                            client.getRequestLimit(),
-                                            client.getDateBirthday());
+                                            client.getRequestedLimit(),
+                                            client.getBirthdayDate());
         log.debug(logMarker + "calculated limit: " + limit);
         if (limit.compareTo(BigDecimal.valueOf(0)) > 0) {
             log.debug(logMarker + "requested limit accepted");
@@ -96,9 +94,9 @@ public class ClientService {
             System.out.println(logMarker + "requested limit declined");
             client.setDecision("decline");
         }
-        client.setLimitITog(limit);
-        client.setDateCurr(new Date());
-        log.debug(logMarker + "saving client data: " + gson.toJson(client));
+        client.setCalculatedLimit(limit);
+        client.setDateCurr(LocalDateTime.now());
+        log.info(logMarker + "saving client data: " + customMapper.writeValueAsString(client));
         clientRepo.save(client);
     }
 
@@ -128,7 +126,7 @@ public class ClientService {
         BigDecimal converted = new BigDecimal(0);
         BigDecimal monthSalary = client.getMonthSalary();
         for(Currency currency : currencies){
-            if(currency.getCcy().equals(client.getCurrSalary())){
+            if(currency.getCcy().equals(client.getSalaryCurrency())){
                 converted = monthSalary.multiply(currency.getSale());
                 break;
             }
@@ -141,8 +139,8 @@ public class ClientService {
      * @param birthDay - birthday of the Client
      * @return true - if the CLient adult, false - if the Client is underage
      */
-    public boolean isClientAdult(Date birthDay) {
-        LocalDate birthDayLocal = birthDay.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    public boolean isClientAdult(LocalDateTime birthDay) {
+        LocalDate birthDayLocal = birthDay.atZone(ZoneId.systemDefault()).toLocalDate();
          return ((Period.between(birthDayLocal, LocalDate.now())).getYears() >= 18);
     }
 
@@ -211,7 +209,7 @@ public class ClientService {
                                      BigDecimal convertedMonthSalary,
                                      BigDecimal debtSumm,
                                      BigDecimal requestLimit,
-                                     Date clientBirthday) {
+                                     LocalDateTime clientBirthday) {
         BigDecimal decimalCoefficient = BigDecimal.valueOf(coefficient);
         BigDecimal limit = decimalCoefficient.multiply(convertedMonthSalary.subtract(debtSumm));
         if (limit.compareTo(requestLimit) > 0) {
@@ -232,12 +230,12 @@ public class ClientService {
      * @param client is the request body from the post request to application
      */
     private void checkClientAndServices(Client client) {
-        if (client == null) throw new IllegalArgumentException("client cannot be null");
-        if (client.getIdClient() == null) throw new IllegalArgumentException("idClient cannot be null");
-        if (client.getDateBirthday() == null) throw new IllegalArgumentException("dateBirthday cannot be null");
-        if (client.getPhone() == null) throw new IllegalArgumentException("phone cannot be null");
-        if (client.getMonthSalary() == null) throw new IllegalArgumentException("monthSalary cannot be null");
-        if (client.getCurrSalary() == null) throw new IllegalArgumentException("currentSalary cannot be null");
+        if (client == null) throw new ValidatorException("client cannot be null");
+        if (client.getIdClient() == null) throw new ValidatorException("idClient cannot be null");
+        if (client.getBirthdayDate() == null) throw new ValidatorException("dateBirthday cannot be null");
+        if (client.getPhone() == null) throw new ValidatorException("phone cannot be null");
+        if (client.getMonthSalary() == null) throw new ValidatorException("monthSalary cannot be null");
+        if (client.getSalaryCurrency() == null) throw new ValidatorException("currentSalary cannot be null");
         if (getCourses() == null) throw new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
     }
 

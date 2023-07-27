@@ -1,5 +1,6 @@
 package com.hadarin.postapp.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,6 +12,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
  *This class helps to handle and process exceptions
  */
 @ControllerAdvice
+@Slf4j
 public class AppExceptionHandler {
 
     /**
@@ -32,10 +34,10 @@ public class AppExceptionHandler {
      * @return response body with error code and description
      */
     @ExceptionHandler
-    public ResponseEntity<ClientErrorResponse> handleException (IllegalArgumentException ex) {
-        ex.printStackTrace();
+    public ResponseEntity<ClientErrorResponse> handleException (ValidatorException ex) {
         ClientErrorResponse error =
                 new ClientErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), System.currentTimeMillis());
+        log.warn("VALIDATION: " + ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 

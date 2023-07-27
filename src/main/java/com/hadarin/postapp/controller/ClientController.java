@@ -1,5 +1,6 @@
 package com.hadarin.postapp.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hadarin.postapp.entity.Client;
 import com.hadarin.postapp.service.ClientService;
 import lombok.AllArgsConstructor;
@@ -24,8 +25,8 @@ public class ClientController {
      * @param client - the request body
      * @return {@link ResponseEntity<String>} - returns "OK" if the request completed without errors
      */
-    @PostMapping("/save-client-info")
-    ResponseEntity<String> saveClientInfo(@RequestBody Client client) {
+    @PostMapping(path = "/save-client-info", consumes = "application/json", produces = "application/json")
+    ResponseEntity<String> saveClientInfo(@RequestBody Client client) throws JsonProcessingException {
         service.updateClientInfo(client);
         return ResponseEntity.ok("OK");
     }
@@ -34,13 +35,13 @@ public class ClientController {
      *Handle hte Get request
      * @return list of the clients
      */
-    @GetMapping("/get-clients")
+    @GetMapping(path = "/get-clients", produces = "application/json")
     public List<Client> getClients(){
         log.info("Getting all clients");
         return service.getClients();
     }
 
-    @GetMapping("/get-clients/{id}")
+    @GetMapping(path = "/get-clients/{id}", produces = "application/json")
     public Client getClientById(@PathVariable Long id){
         return service.getClientById(id);
     }
