@@ -10,7 +10,6 @@ import com.hadarin.postapp.repos.CreditRepo;
 import com.hadarin.postapp.rest.ValidatorException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -24,11 +23,10 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
- *The main service of the application that processing input data
+ * The main service of the application that processing input data
  */
 @Service
 @Slf4j
@@ -37,38 +35,37 @@ public class ClientService {
 
     private final ClientRepo clientRepo;
     private final CreditRepo creditRepo;
-    @Qualifier("customMapper")
     private final ObjectMapper customMapper;
 
     /**
-     *Service method that returns all Clients from the database
+     * Service method that returns all Clients from the database
      */
-    public List<Client> getClients(){
+    public List<Client> getClients() {
         return (List<Client>) clientRepo.findAll();
     }
 
     /**
-     *
      * @param idClient
      * @return client by idClient
      */
-    public Client getClientById(Long idClient){
+    public Client getClientById(Long idClient) {
         Client client = clientRepo.findClientByIdClient(idClient);
-        if(client != null){
+        if (client != null) {
             return client;
         } else {
-            throw new IllegalArgumentException("The client isn't found in base by id " + idClient +".");
+            throw new IllegalArgumentException("The client isn't found in base by id " + idClient + ".");
         }
     }
 
     /**
-     *Final Service method to process all input data
+     * Final Service method to process all input data
+     *
      * @param client is the request body from the post request to application
      */
     public void updateClientInfo(Client client) throws JsonProcessingException {
         checkClientAndServices(client);
         String logMarker = "CLIENT ID: " + client.getIdClient() + " > ";
-        BigDecimal convertedMonthSalary =  convertedMonthSalary(client, getCourses());
+        BigDecimal convertedMonthSalary = convertedMonthSalary(client, getCourses());
         List<Credit> credits = getCreditsByIdClient(client.getIdClient());
         BigDecimal debtSum;
         if (credits == null || credits.isEmpty()) {
@@ -82,10 +79,10 @@ public class ClientService {
         Double limitCoefficient = getLimitCoefficient(client.getPhone());
         log.debug(logMarker + "coefficient for the limit calculation: " + limitCoefficient);
         BigDecimal limit = calculateLimit(limitCoefficient,
-                                            convertedMonthSalary,
-                                            debtSum,
-                                            client.getRequestedLimit(),
-                                            client.getBirthdayDate());
+                convertedMonthSalary,
+                debtSum,
+                client.getRequestedLimit(),
+                client.getBirthdayDate());
         log.debug(logMarker + "calculated limit: " + limit);
         if (limit.compareTo(BigDecimal.valueOf(0)) > 0) {
             log.debug(logMarker + "requested limit accepted");
@@ -101,32 +98,37 @@ public class ClientService {
     }
 
 
-
     /**
      * Taking from the api and mapping to Currency class list of the currencies.
      * Currencies by index:
-     *     #0 - EUR
-     *     #1 - USD
+     * #0 - EUR
+     * #1 - USD
+     *
      * @return list of currencies
      */
-    public ArrayList<Currency> getCourses () {
-        RestTemplate restTemplate = new RestTemplate();
-        String uri = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
-         return restTemplate.exchange(uri, HttpMethod.GET,
+    public ArrayList<Currency> getCourses() {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String uri = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
+            log.info("Getting currencies from the external api...");
+            return restTemplate.exchange(uri, HttpMethod.GET,
                     null, new ParameterizedTypeReference<ArrayList<Currency>>() {
                     }).getBody();
+        } catch (Exception e) {
+            throw new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     /**
-     * @param client is the request body from the post request to application
+     * @param client     is the request body from the post request to application
      * @param currencies list of the currencies taken from the api
      * @return the salary converted to UAH
      */
     public BigDecimal convertedMonthSalary(Client client, List<Currency> currencies) {
         BigDecimal converted = new BigDecimal(0);
         BigDecimal monthSalary = client.getMonthSalary();
-        for(Currency currency : currencies){
-            if(currency.getCcy().equals(client.getSalaryCurrency())){
+        for (Currency currency : currencies) {
+            if (currency.getCcy().equals(client.getSalaryCurrency())) {
                 converted = monthSalary.multiply(currency.getSale());
                 break;
             }
@@ -135,28 +137,28 @@ public class ClientService {
     }
 
     /**
-     *
      * @param birthDay - birthday of the Client
      * @return true - if the CLient adult, false - if the Client is underage
      */
     public boolean isClientAdult(LocalDateTime birthDay) {
         LocalDate birthDayLocal = birthDay.atZone(ZoneId.systemDefault()).toLocalDate();
-         return ((Period.between(birthDayLocal, LocalDate.now())).getYears() >= 18);
+        return ((Period.between(birthDayLocal, LocalDate.now())).getYears() >= 18);
     }
 
     /**
-     *Counting all opened credits of the Client
+     * Counting all opened credits of the Client
+     *
      * @param client is the request body from the post request to application
      * @return summ of the all opened credits
      */
     public BigDecimal getDebtSum(Client client) {
         BigDecimal summ = new BigDecimal(0);
-        for (Credit credit: creditRepo.findAllByClient_IdClient(client.getIdClient())) {
+        for (Credit credit : creditRepo.findAllByClient_IdClient(client.getIdClient())) {
             if (credit.getStateCredit().equals("O")) {
                 summ = summ.add(credit.getAmtCredit());
             }
         }
-        return  summ;
+        return summ;
     }
 
     public List<Credit> getCreditsByIdClient(Long idClient) {
@@ -165,6 +167,7 @@ public class ClientService {
 
     /**
      * Processing coefficient k, that necessary to limitItog processing
+     *
      * @param phone - telephone number of the Client
      * @return coefficient k
      */
@@ -198,11 +201,12 @@ public class ClientService {
 
     /**
      * Pprocess limit according to the following parameters
-     * @param coefficient - k based on mobile operator code
+     *
+     * @param coefficient          - k based on mobile operator code
      * @param convertedMonthSalary - month salary of the Client converted to UAH
-     * @param debtSumm - summ of the opened Client credits
-     * @param requestLimit - requested limit in UAH by Client
-     * @param clientBirthday - the birthday of the Client, if the Client isn't adult - limit should be null.
+     * @param debtSumm             - summ of the opened Client credits
+     * @param requestLimit         - requested limit in UAH by Client
+     * @param clientBirthday       - the birthday of the Client, if the Client isn't adult - limit should be null.
      * @return processed limit
      */
     public BigDecimal calculateLimit(Double coefficient,
@@ -227,6 +231,7 @@ public class ClientService {
 
     /**
      * Throws exceptions in case of the required fields are not fulfilled.
+     *
      * @param client is the request body from the post request to application
      */
     private void checkClientAndServices(Client client) {
@@ -236,7 +241,6 @@ public class ClientService {
         if (client.getPhone() == null) throw new ValidatorException("phone cannot be null");
         if (client.getMonthSalary() == null) throw new ValidatorException("monthSalary cannot be null");
         if (client.getSalaryCurrency() == null) throw new ValidatorException("currentSalary cannot be null");
-        if (getCourses() == null) throw new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
 }

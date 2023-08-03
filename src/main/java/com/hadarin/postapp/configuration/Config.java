@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class Config {
 
     @Bean("customMapper")
-    public ObjectMapper customMapper (){
+    public ObjectMapper customMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.findAndRegisterModules();
         return mapper;

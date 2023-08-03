@@ -1,11 +1,11 @@
 package com.hadarin.postapp.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -36,7 +36,7 @@ public class Credit {
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name ="id_client", nullable = false)
+    @JoinColumn(name = "id_client", nullable = false)
     private Client client;
 
     public Credit(BigDecimal amtCredit, String stateCredit) {

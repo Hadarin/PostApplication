@@ -1,12 +1,5 @@
 package com.hadarin.postapp;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hadarin.postapp.entity.Client;
 import com.hadarin.postapp.repos.ClientRepo;
@@ -19,6 +12,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 public class ClientControllerItTest extends AbstractItTest {
@@ -34,12 +35,12 @@ public class ClientControllerItTest extends AbstractItTest {
     ObjectMapper customMapper;
 
     @Test
-    public void mvc_is_not_null () {
+    public void mvc_is_not_null() {
         assertThat(mvc).isNotNull();
     }
 
     @Test
-    public void should_return_jsonArray_of_clients () throws Exception {
+    public void should_return_jsonArray_of_clients() throws Exception {
 
         repo.save(Client.builder()
                 .phone("380676666666")
@@ -66,13 +67,19 @@ public class ClientControllerItTest extends AbstractItTest {
     }
 
     @Test
-    public void bad_good_request_test () throws Exception {
+    public void bad_request_test() throws Exception {
 
         mvc.perform(post("/api/save-client-info")
-                .content(String.valueOf(customMapper.writeValueAsString(new Client())))
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
+                        .content(String.valueOf(customMapper.writeValueAsString(new Client())))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    public void good_request_test() throws Exception {
 
         Client client = Client.builder()
                 .idClient(1L)
