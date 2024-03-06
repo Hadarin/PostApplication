@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -19,6 +21,16 @@ import java.util.List;
 public class ClientController {
 
     private ClientService service;
+
+    @GetMapping(path = "/get-principal")
+    public String securityTest(Principal principal) {
+        return "Secured get mapping! Name is: " + principal.getName();
+    }
+
+    @GetMapping(path = "/is-working")
+    public String isAppWorks () {
+        return "Application is working!";
+    }
 
     /**
      *Handle the Post request++

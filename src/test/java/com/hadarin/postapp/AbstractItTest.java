@@ -24,6 +24,7 @@ public abstract class AbstractItTest {
         registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
         registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "create");
+        registry.add("spring.sql.init.mode", () -> "never");
     }
 
 }
