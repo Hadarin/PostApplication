@@ -9,15 +9,15 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 
 @EnableConfigurationProperties(RsaKeyProperties.class)
 @SpringBootApplication
-public class PostAppApplication extends SpringBootServletInitializer{
+public class PostAppApplication extends SpringBootServletInitializer {
 
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-		return builder.sources(PostAppApplication.class);
-	}
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(PostAppApplication.class);
+    }
 
-	public static void main(String[] args) {
-		SpringApplication.run(PostAppApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(PostAppApplication.class, args);
+    }
 
 }

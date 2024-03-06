@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- *This class is the body of the error response in case of incorrect data input.
+ * This class is the body of the error response in case of incorrect data input.
  */
 @Getter
 @Setter

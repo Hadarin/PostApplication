@@ -9,32 +9,32 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
- *This class helps to handle and process exceptions
+ * This class helps to handle and process exceptions
  */
 @ControllerAdvice
 @Slf4j
 public class AppExceptionHandler {
 
     /**
-     *
      * @param ex exception to the concrete type (Exception)
      * @return response body with error code and description
      */
     @ExceptionHandler
-    public ResponseEntity<ClientErrorResponse> handleException (Exception ex) {
+    public ResponseEntity<ClientErrorResponse> handleException(Exception ex) {
         ex.printStackTrace();
         ClientErrorResponse error = new ClientErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(),
-        "Oops. Something went wrong. Probably external services are unavailable.", System.currentTimeMillis());
+                "Oops. Something went wrong. Probably external services are unavailable.", System.currentTimeMillis());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
-     *Exception handler that excepts incorrect data
+     * Exception handler that excepts incorrect data
+     *
      * @param ex exception to the concrete type (IllegalArgumentException)
      * @return response body with error code and description
      */
     @ExceptionHandler
-    public ResponseEntity<ClientErrorResponse> handleException (ValidatorException ex) {
+    public ResponseEntity<ClientErrorResponse> handleException(ValidatorException ex) {
         ClientErrorResponse error =
                 new ClientErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), System.currentTimeMillis());
         log.warn("VALIDATION: " + ex.getMessage());
@@ -42,14 +42,15 @@ public class AppExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<ClientErrorResponse> handleException (HttpServerErrorException ex) {
+    public ResponseEntity<ClientErrorResponse> handleException(HttpServerErrorException ex) {
         ex.printStackTrace();
         ClientErrorResponse error =
                 new ClientErrorResponse(HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage(), System.currentTimeMillis());
         return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
     }
+
     @ExceptionHandler
-    public ResponseEntity<ClientErrorResponse> handleException (MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ClientErrorResponse> handleException(MethodArgumentTypeMismatchException ex) {
         ex.printStackTrace();
         ClientErrorResponse error =
                 new ClientErrorResponse(HttpStatus.BAD_REQUEST.value(), "Please enter a correct request", System.currentTimeMillis());

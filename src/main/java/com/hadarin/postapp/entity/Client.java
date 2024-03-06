@@ -1,9 +1,9 @@
 package com.hadarin.postapp.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.*;
 import lombok.*;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
  * Domain Client class
  */
 @Entity
-@Table(name ="client")
+@Table(name = "client")
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
